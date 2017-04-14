@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <malloc.h>
 #include <stdint.h>
 #include <time.h>
@@ -28,8 +29,7 @@ char* outstr = "testout.bmp";
     } img;
 #pragma pop
 
-char* openbmp(char* filename, img* bmp) 
-{
+char* openImg(char* filename, img* bmp) {
     FILE* f;
     f = fopen(filename, "rb");
     if (f == 0)
@@ -144,25 +144,21 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius)
 			}
 		}
 	}
-		free(red);
-		free(green);
-		free(blue);
+	free(red);
+	free(green);
+	free(blue);
 }
 
-int main(int argc, char** argv[])
-{
+int main(int argc, char** argv[]) {
     unsigned char* imgdata;
     int i;
     img* bmp = (img*) malloc (54);
-    /*for (i = 0; i < 45; i++)
-    {*/
-        imgdata = openbmp(str, bmp);
-        //timec = transform(bmp->width, bmp->height, imgdata);
-        gaussianblur(bmp->width, bmp->height, imgdata, 0.5); // тут радиус "1", при больших значениях медленно работает
-        writebmp(outstr, bmp, imgdata);
-        char* temp;
-        //printf("TimeC: %0.0fms\n", timec);
-    //}
+
+    imgdata = openImg(str, bmp);
+
+    gaussianblur(bmp->width, bmp->height, imgdata, 2);
+    writebmp(outstr, bmp, imgdata);
+    char* temp;
 
     free(bmp);
     free(imgdata);
