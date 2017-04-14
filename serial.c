@@ -5,8 +5,6 @@
 #include <time.h>
 #include <math.h>
 
-char* str = "test.bmp";
-char* outstr = "testout.bmp";
 
 // Describe the structure of BMP file
 #pragma pack(push, 2)          
@@ -29,31 +27,53 @@ char* outstr = "testout.bmp";
     } img;
 #pragma pop
 
+char* openImg(char* filename, img* bmp);
+void generateImg(char* filename, img* bmp, char* imgdata);
+void transform(int width, int height, char* imgdata);
+void gaussianblur(int width, int height, unsigned char* imgdata, float radius);
+
+int main(int argc, char *argv[]) {
+    unsigned char* imgdata;
+    int i;
+    img* bmp = (img*) malloc (54);
+    char* str = "input.bmp";
+    char* outstr = "output.bmp";
+
+    int para = atoi(argv[1]);
+
+    imgdata = openImg(str, bmp);
+
+    gaussianblur(bmp->width, bmp->height, imgdata, para);
+    generateImg(outstr, bmp, imgdata);
+    char* temp;
+
+    free(bmp);
+    free(imgdata);
+    return 0;
+}
+
 char* openImg(char* filename, img* bmp) {
-    FILE* f;
-    f = fopen(filename, "rb");
-    if (f == 0)
-    {
+    FILE* file;
+    file = fopen(filename, "rb");
+    if (file == 0) {
         free(bmp);
-        printf("Error while reading!");
+        printf("Can't open theis file");
         exit(1);
     }
-    fread(bmp, 54, 1, f);
-    if ((bmp->sign != 19778) || (bmp->bitpix != 24) )
-    {
+    fread(bmp, 54, 1, file);
+    if ((bmp->sign != 19778) || (bmp->bitpix != 24) ) {
         free(bmp);
         printf("File is incorrect!");
         exit(1);
     }
     char* data = (char*) malloc (bmp->arraywidth);
-    fseek(f, bmp->data, SEEK_SET);
-    fread(data, bmp->arraywidth, 1, f);
-    fclose(f);
+    fseek(file, bmp->data, SEEK_SET);
+    fread(data, bmp->arraywidth, 1, file);
+    fclose(file);
     return data;
 }
 
-void writebmp(char* filename, img* bmp, char* imgdata)
-{
+void generateImg(char* filename, img* bmp, char* imgdata) {
     FILE* f;
     f = fopen(filename, "wb");
     fwrite(bmp, 54, 1, f);
@@ -62,30 +82,23 @@ void writebmp(char* filename, img* bmp, char* imgdata)
     fclose(f);
 }
 
-double transform(int width, int height, char* imgdata)
-{
-    double start = clock();
+void transform(int width, int height, char* imgdata) {
     int i,j;
     int newwidth = 4 - ((width * 3) % 4) + (width * 3);
     char temp;
-    for (i = 0; i < height / 2; i++)
-        for (j = 0; j < newwidth; j++)
-        {
+    for (i = 0; i < height / 2; i++){
+        for (j = 0; j < newwidth; j++) {
              temp = imgdata[i*newwidth+j];
              imgdata[i*newwidth+j] = imgdata[(height-1-i)*newwidth+j];
              imgdata[(height-1-i)*newwidth+j] = temp;
         }
-    double finish = clock();
-    double elapsed = finish-start;
-
-    return elapsed;
+    }
 }
 
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 
-void gaussianblur(int width, int height, unsigned char* imgdata, float radius)
-{
+void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
 	int counter;
     unsigned char* red;
     unsigned char* green;
@@ -97,8 +110,7 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius)
 	green = (unsigned char*) malloc(width*height);
 	blue = (unsigned char*) malloc(width*height);
 	counter = 0;
-	for (i = 0; i < height; i++)
-	{
+	for (i = 0; i < height; i++) {
 		for (j = 0; j < nwidth; j = j + 3)
 		if (j < nwidth - trash) {
 			red[counter] = imgdata[i * nwidth + j];
@@ -110,32 +122,33 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius)
     double rs = ceil(radius * 2.57);
     double iy;
     double ix;
-        for(i=0; i<height; i++)
-                for(j=0; j<width; j++) {
-                    double valr = 0;
-                    double valg = 0;
-                    double valb = 0;
-                    double wsum = 0;
-                    for(iy = i-rs; iy<i+rs+1; iy++)
-                            for(ix = j-rs; ix<j+rs+1; ix++) {
-                                int x = min(width-1, max(0, ix));
-                                int y = min(height-1, max(0, iy));
-                                double dsq = (ix-j)*(ix-j)+(iy-i)*(iy-i);
-                                double wght = exp( -dsq / (2*radius*radius) ) / (3.14*2*radius*radius);
-                                valr += red[y*width+x] * wght;
-                                valg += green[y*width+x] * wght;
-                                valb += blue[y*width+x] * wght;
-                                wsum += wght;
-                             }
-                    red[i*width+j] = round(valr/wsum);
-                    green[i*width+j] = round(valg/wsum);
-                    blue[i*width+j] = round(valb/wsum);
-                }
+    for(i=0; i<height; i++){
+        for(j=0; j<width; j++) {
+            double valr = 0;
+            double valg = 0;
+            double valb = 0;
+            double wsum = 0;
+            for(iy = i-rs; iy<i+rs+1; iy++){
+                for(ix = j-rs; ix<j+rs+1; ix++) {
+                    int x = min(width-1, max(0, ix));
+                    int y = min(height-1, max(0, iy));
+                    double dsq = (ix-j)*(ix-j)+(iy-i)*(iy-i);
+                    double wght = exp( -dsq / (2*radius*radius) ) / (3.14*2*radius*radius);
+                    valr += red[y*width+x] * wght;
+                    valg += green[y*width+x] * wght;
+                    valb += blue[y*width+x] * wght;
+                    wsum += wght;
+                }    
+            }
+            red[i*width+j] = round(valr/wsum);
+            green[i*width+j] = round(valg/wsum);
+            blue[i*width+j] = round(valb/wsum);
+        }
+    }
+        
 	counter = 0;
-	for (i = 0; i < height; i++)
-	{
-		for (j = 0; j < nwidth; j = j + 3)
-		{
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < nwidth; j = j + 3) {
 			if (j < nwidth - trash) {
 				imgdata[i * nwidth + j] = red[counter];
 				imgdata[i * nwidth + j + 1] = green[counter];
@@ -147,20 +160,4 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius)
 	free(red);
 	free(green);
 	free(blue);
-}
-
-int main(int argc, char** argv[]) {
-    unsigned char* imgdata;
-    int i;
-    img* bmp = (img*) malloc (54);
-
-    imgdata = openImg(str, bmp);
-
-    gaussianblur(bmp->width, bmp->height, imgdata, 2);
-    writebmp(outstr, bmp, imgdata);
-    char* temp;
-
-    free(bmp);
-    free(imgdata);
-    return 0;
 }
