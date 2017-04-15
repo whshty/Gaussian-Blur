@@ -29,26 +29,25 @@
 
 char* openImg(char* filename, img* bmp);
 void generateImg(char* filename, img* bmp, char* imgdata);
-void transform(int width, int height, char* imgdata);
 void gaussianblur(int width, int height, unsigned char* imgdata, float radius);
 
 int main(int argc, char *argv[]) {
-    unsigned char* imgdata;
+    unsigned char* inputData;
     int i;
     img* bmp = (img*) malloc (54);
-    char* str = "input.bmp";
-    char* outstr = "output.bmp";
+    char* inputImg = "input.bmp";
+    char* outputImg = "output.bmp";
 
-    int para = atoi(argv[1]);
+    int sigma = atoi(argv[1]);
 
-    imgdata = openImg(str, bmp);
+    inputData = openImg(inputImg, bmp);
 
-    gaussianblur(bmp->width, bmp->height, imgdata, para);
-    generateImg(outstr, bmp, imgdata);
-    char* temp;
+    gaussianblur(bmp->width, bmp->height, inputData, sigma);
+
+    generateImg(outputImg, bmp, inputData);
 
     free(bmp);
-    free(imgdata);
+    free(inputData);
     return 0;
 }
 
@@ -57,13 +56,18 @@ char* openImg(char* filename, img* bmp) {
     file = fopen(filename, "rb");
     if (file == 0) {
         free(bmp);
-        printf("Can't open theis file");
+        printf("Can't open theis file!");
         exit(1);
     }
     fread(bmp, 54, 1, file);
-    if ((bmp->sign != 19778) || (bmp->bitpix != 24) ) {
+    if ( bmp->sign != 19778){
         free(bmp);
         printf("File is incorrect!");
+        exit(1);
+    }
+    if( bmp->bitpix != 24){
+        free(bmp);
+        printf("Need 24 bit bmp file!");
         exit(1);
     }
     char* data = (char*) malloc (bmp->arraywidth);
@@ -82,18 +86,7 @@ void generateImg(char* filename, img* bmp, char* imgdata) {
     fclose(f);
 }
 
-void transform(int width, int height, char* imgdata) {
-    int i,j;
-    int newwidth = 4 - ((width * 3) % 4) + (width * 3);
-    char temp;
-    for (i = 0; i < height / 2; i++){
-        for (j = 0; j < newwidth; j++) {
-             temp = imgdata[i*newwidth+j];
-             imgdata[i*newwidth+j] = imgdata[(height-1-i)*newwidth+j];
-             imgdata[(height-1-i)*newwidth+j] = temp;
-        }
-    }
-}
+
 
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 #define min(x, y) (((x) < (y)) ? (x) : (y))
