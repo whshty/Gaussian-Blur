@@ -34,7 +34,6 @@ int main(int argc, char *argv[]) {
     int i;
     img* bmp = (img*) malloc (60);
     char* inputImg = "input.bmp";
-    char* outputImg = "output.bmp";
 
     int radius = atoi(argv[1]);
 
