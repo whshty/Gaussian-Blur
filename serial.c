@@ -96,24 +96,19 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
     blue = (unsigned char*) malloc(width*height);
     int i, j;
     int pos = 0;
-
-
-
-
-
-    int trash = 4 - width * 3 % 4;
-    int nwidth = trash +  (width * 3);
-
-
+    
+    int rgb_width =  width * 3 ;
+    if ( (width * 3  % 4) != 0) {
+       rgb_width += (4 - (width * 3 % 4));  
+    }
+    
 
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < nwidth; j = j + 3){
-            if (j < nwidth - trash) {
-              red[pos] = imgdata[i * nwidth + j];
-              green[pos] = imgdata[i * nwidth + j + 1];
-              blue[pos] = imgdata[i * nwidth + j + 2];
-              pos++;
-            }    
+		for (j = 0; j < rgb_width, j < width * 3; j += 3){
+            red[pos] = imgdata[i * rgb_width + j];
+            green[pos] = imgdata[i * rgb_width + j + 1];
+            blue[pos] = imgdata[i * rgb_width + j + 2];
+            pos++;
         }
 	}
 
@@ -151,13 +146,11 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
         
 	pos = 0;
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < nwidth; j = j + 3) {
-			if (j < nwidth - trash) {
-				imgdata[i * nwidth + j] = red[pos];
-				imgdata[i * nwidth + j + 1] = green[pos];
-				imgdata[i * nwidth + j + 2] = blue[pos];
-				pos++;
-			}
+		for (j = 0; j < rgb_width, j < width* 3 ; j  += 3) {
+			imgdata[i * rgb_width  + j] = red[pos];
+			imgdata[i * rgb_width  + j + 1] = green[pos];
+			imgdata[i * rgb_width  + j + 2] = blue[pos];
+			pos++;
 		}
 	}
 	free(red);
