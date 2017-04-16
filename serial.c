@@ -29,7 +29,7 @@
 
 char* openImg(char* filename, img* bmp);
 void generateImg(img* bmp, char* imgdata);
-void gaussianblur(int width, int height, unsigned char* imgdata, float radius);
+void gaussianblur(int width, int height, unsigned char* imgdata, int radius);
 
 int main(int argc, char *argv[]) {
     unsigned char* inputData;
@@ -87,7 +87,7 @@ void generateImg(img* out, char* imgdata) {
 
 
 
-void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
+void gaussianblur(int width, int height, unsigned char* imgdata, int radius) {
     unsigned char* red;
     unsigned char* green;
     unsigned char* blue;
@@ -98,13 +98,13 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
     int pos = 0;
     
     int rgb_width =  width * 3 ;
-    if ( (width * 3  % 4) != 0) {
+    if ((width * 3  % 4) != 0) {
        rgb_width += (4 - (width * 3 % 4));  
     }
-    
+
 
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < rgb_width, j < width * 3; j += 3){
+		for (j = 0; j < width * 3; j += 3){
             red[pos] = imgdata[i * rgb_width + j];
             green[pos] = imgdata[i * rgb_width + j + 1];
             blue[pos] = imgdata[i * rgb_width + j + 2];
@@ -112,7 +112,8 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
         }
 	}
 
-    double rs = ceil(radius * 2.57);
+    radius = ceil(radius);
+    int x;
     double iy;
     double ix;
 
@@ -126,8 +127,8 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
             valg = 0;
             valb = 0;
             wsum = 0;
-            for(iy = i-rs; iy<i+rs+1; iy++){
-                for(ix = j-rs; ix<j+rs+1; ix++) {
+            for(iy = i-radius; iy<i+radius+1; iy++){
+                for(ix = j-radius; ix<j+radius+1; ix++) {
                     int x = min(width-1, max(0, ix));
                     int y = min(height-1, max(0, iy));
                     double dsq = (ix-j)*(ix-j)+(iy-i)*(iy-i);
@@ -146,7 +147,7 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
         
 	pos = 0;
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < rgb_width, j < width* 3 ; j  += 3) {
+		for (j = 0; j < width* 3 ; j  += 3) {
 			imgdata[i * rgb_width  + j] = red[pos];
 			imgdata[i * rgb_width  + j + 1] = green[pos];
 			imgdata[i * rgb_width  + j + 2] = blue[pos];
