@@ -26,13 +26,13 @@
 #pragma pop
 
 char* openImg(char* filename, img* bmp);
-void generateImg(char* filename, img* bmp, char* imgdata);
+void generateImg(img* bmp, char* imgdata);
 void gaussianblur(int width, int height, unsigned char* imgdata, float radius);
 
 int main(int argc, char *argv[]) {
     unsigned char* inputData;
     int i;
-    img* bmp = (img*) malloc (54);
+    img* bmp = (img*) malloc (60);
     char* inputImg = "input.bmp";
     char* outputImg = "output.bmp";
 
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     gaussianblur(bmp->width, bmp->height, inputData, radius);
 
-    generateImg(outputImg, bmp, inputData);
+    generateImg(bmp, inputData);
 
     free(bmp);
     free(inputData);
@@ -75,9 +75,17 @@ char* openImg(char* filename, img* bmp) {
     return data;
 }
 
-void generateImg(char* filename, img* bmp, char* imgdata) {
+void generateImg(img* bmp, char* imgdata) {
     FILE* file;
-    file = fopen(filename, "wb");
+    time_t now;
+    time(&now);
+
+    char fileNameBuffer[32];
+    sprintf(fileNameBuffer, "%s.bmp",ctime(&now));
+
+
+
+    file = fopen(fileNameBuffer, "wb");
     fwrite(bmp, 54, 1, file);
     fseek(file, bmp->data, SEEK_SET);
     fwrite(imgdata, bmp->arraywidth, 1, file);
@@ -92,24 +100,29 @@ void generateImg(char* filename, img* bmp, char* imgdata) {
 
 
 void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
-	int counter;
     unsigned char* red;
     unsigned char* green;
-	unsigned char* blue;
+    unsigned char* blue;
+
+
+
+
     int trash = 4 - width * 3 % 4;
     int nwidth = trash +  (width * 3);
     int i, j;
 	red = (unsigned char*) malloc (width*height);
 	green = (unsigned char*) malloc(width*height);
 	blue = (unsigned char*) malloc(width*height);
-	counter = 0;
+    int pos = 0;
+
+
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < nwidth; j = j + 3)
 		if (j < nwidth - trash) {
-			red[counter] = imgdata[i * nwidth + j];
-			green[counter] = imgdata[i * nwidth + j + 1];
-			blue[counter] = imgdata[i * nwidth + j + 2];
-			counter++;
+			red[pos] = imgdata[i * nwidth + j];
+			green[pos] = imgdata[i * nwidth + j + 1];
+			blue[pos] = imgdata[i * nwidth + j + 2];
+			pos++;
 		}
 	}
 
@@ -145,14 +158,14 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
         }
     }
         
-	counter = 0;
+	pos = 0;
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < nwidth; j = j + 3) {
 			if (j < nwidth - trash) {
-				imgdata[i * nwidth + j] = red[counter];
-				imgdata[i * nwidth + j + 1] = green[counter];
-				imgdata[i * nwidth + j + 2] = blue[counter];
-				counter++;
+				imgdata[i * nwidth + j] = red[pos];
+				imgdata[i * nwidth + j + 1] = green[pos];
+				imgdata[i * nwidth + j + 2] = blue[pos];
+				pos++;
 			}
 		}
 	}
