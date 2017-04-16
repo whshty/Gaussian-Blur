@@ -103,27 +103,30 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
     unsigned char* red;
     unsigned char* green;
     unsigned char* blue;
+    red = (unsigned char*) malloc (width*height);
+    green = (unsigned char*) malloc(width*height);
+    blue = (unsigned char*) malloc(width*height);
+    int i, j;
+    int pos = 0;
+
 
 
 
 
     int trash = 4 - width * 3 % 4;
     int nwidth = trash +  (width * 3);
-    int i, j;
-	red = (unsigned char*) malloc (width*height);
-	green = (unsigned char*) malloc(width*height);
-	blue = (unsigned char*) malloc(width*height);
-    int pos = 0;
+
 
 
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < nwidth; j = j + 3)
-		if (j < nwidth - trash) {
-			red[pos] = imgdata[i * nwidth + j];
-			green[pos] = imgdata[i * nwidth + j + 1];
-			blue[pos] = imgdata[i * nwidth + j + 2];
-			pos++;
-		}
+		for (j = 0; j < nwidth; j = j + 3){
+            if (j < nwidth - trash) {
+              red[pos] = imgdata[i * nwidth + j];
+              green[pos] = imgdata[i * nwidth + j + 1];
+              blue[pos] = imgdata[i * nwidth + j + 2];
+              pos++;
+            }    
+        }
 	}
 
     double rs = ceil(radius * 2.57);
