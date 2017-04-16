@@ -5,8 +5,6 @@
 #include <time.h>
 #include <math.h>
 
-
-// Describe the structure of BMP file
 #pragma pack(push, 2)          
     typedef struct {
         uint16_t sign;
@@ -38,11 +36,11 @@ int main(int argc, char *argv[]) {
     char* inputImg = "input.bmp";
     char* outputImg = "output.bmp";
 
-    int sigma = atoi(argv[1]);
+    int radius = atoi(argv[1]);
 
     inputData = openImg(inputImg, bmp);
 
-    gaussianblur(bmp->width, bmp->height, inputData, sigma);
+    gaussianblur(bmp->width, bmp->height, inputData, radius);
 
     generateImg(outputImg, bmp, inputData);
 
@@ -78,18 +76,20 @@ char* openImg(char* filename, img* bmp) {
 }
 
 void generateImg(char* filename, img* bmp, char* imgdata) {
-    FILE* f;
-    f = fopen(filename, "wb");
-    fwrite(bmp, 54, 1, f);
-    fseek(f, bmp->data, SEEK_SET);
-    fwrite(imgdata, bmp->arraywidth, 1, f);
-    fclose(f);
+    FILE* file;
+    file = fopen(filename, "wb");
+    fwrite(bmp, 54, 1, file);
+    fseek(file, bmp->data, SEEK_SET);
+    fwrite(imgdata, bmp->arraywidth, 1, file);
+    fclose(file);
 }
 
 
 
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 #define min(x, y) (((x) < (y)) ? (x) : (y))
+
+
 
 void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
 	int counter;
@@ -112,15 +112,21 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius) {
 			counter++;
 		}
 	}
+
     double rs = ceil(radius * 2.57);
     double iy;
     double ix;
+
+    double valr = 0;
+    double valg = 0;
+    double valb = 0;
+    double wsum = 0;
     for(i=0; i<height; i++){
         for(j=0; j<width; j++) {
-            double valr = 0;
-            double valg = 0;
-            double valb = 0;
-            double wsum = 0;
+            valr = 0;
+            valg = 0;
+            valb = 0;
+            wsum = 0;
             for(iy = i-rs; iy<i+rs+1; iy++){
                 for(ix = j-rs; ix<j+rs+1; ix++) {
                     int x = min(width-1, max(0, ix));
