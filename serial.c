@@ -5,6 +5,8 @@
 #include <time.h>
 #include <math.h>
 
+#define IMAGESIZE 60
+
 #pragma pack(push, 2)          
     typedef struct {
         uint16_t sign;
@@ -32,15 +34,12 @@ void gaussianblur(int width, int height, unsigned char* imgdata, float radius);
 int main(int argc, char *argv[]) {
     unsigned char* inputData;
     int i;
-    img* bmp = (img*) malloc (60);
+    img* bmp = (img*) malloc (IMAGESIZE);
     char* inputImg = "input.bmp";
 
     int radius = atoi(argv[1]);
-
     inputData = openImg(inputImg, bmp);
-
     gaussianblur(bmp->width, bmp->height, inputData, radius);
-
     generateImg(bmp, inputData);
 
     free(bmp);
@@ -48,46 +47,36 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-char* openImg(char* filename, img* bmp) {
+char* openImg(char* filename, img* in) {
     FILE* file;
-    file = fopen(filename, "rb");
-    if (file == 0) {
-        free(bmp);
-        printf("Can't open theis file!");
+    if (!(file = fopen(filename, "rb"))) {
+        printf("File not found!");
+        free(in);
         exit(1);
     }
-    fread(bmp, 54, 1, file);
-    if ( bmp->sign != 19778){
-        free(bmp);
-        printf("File is incorrect!");
-        exit(1);
-    }
-    if( bmp->bitpix != 24){
-        free(bmp);
+    fread(in, 54, 1, file);
+    if( in->bitpix != 24){
+        free(in);
         printf("Need 24 bit bmp file!");
         exit(1);
     }
-    char* data = (char*) malloc (bmp->arraywidth);
-    fseek(file, bmp->data, SEEK_SET);
-    fread(data, bmp->arraywidth, 1, file);
+    char* data = (char*) malloc (in->arraywidth);
+    fseek(file, in->data, SEEK_SET);
+    fread(data, in->arraywidth, 1, file);
     fclose(file);
     return data;
 }
 
-void generateImg(img* bmp, char* imgdata) {
+void generateImg(img* out, char* imgdata) {
     FILE* file;
     time_t now;
     time(&now);
-
     char fileNameBuffer[32];
     sprintf(fileNameBuffer, "%s.bmp",ctime(&now));
-
-
-
     file = fopen(fileNameBuffer, "wb");
-    fwrite(bmp, 54, 1, file);
-    fseek(file, bmp->data, SEEK_SET);
-    fwrite(imgdata, bmp->arraywidth, 1, file);
+    fwrite(out, IMAGESIZE, 1, file);
+    fseek(file, out->data, SEEK_SET);
+    fwrite(imgdata, out->arraywidth, 1, file);
     fclose(file);
 }
 
