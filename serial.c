@@ -9,21 +9,21 @@
 
 #pragma pack(push, 2)          
     typedef struct {
-        uint16_t sign;
-        uint32_t size;
-        uint32_t notused;
-        uint32_t data;
-        uint32_t headwidth;
-        uint32_t width;
-        uint32_t height;
-        uint16_t numofplanes;
-        uint16_t bitpix;
-        uint32_t method;
-        uint32_t arraywidth;
-        uint32_t horizresol;
-        uint32_t vertresol;
-        uint32_t colnum;
-        uint32_t basecolnum;
+        char sign;
+        int size;
+        int notused;
+        int data;
+        int headwidth;
+        int width;
+        int height;
+        short numofplanes;
+        short bitpix;
+        int method;
+        int arraywidth;
+        int horizresol;
+        int vertresol;
+        int colnum;
+        int basecolnum;
     } img;
 #pragma pop
 
@@ -82,10 +82,11 @@ void generateImg(img* out, char* imgdata) {
 
 
 
-#define max(x, y) (((x) > (y)) ? (x) : (y))
-#define min(x, y) (((x) < (y)) ? (x) : (y))
-
-
+int setBoundary(int i , int min , int max){
+    if( i < min) return min;
+    else if( i > max ) return max;
+    return i;  
+}
 
 void gaussianblur(int width, int height, unsigned char* imgdata, int radius) {
     unsigned char* red;
@@ -104,54 +105,57 @@ void gaussianblur(int width, int height, unsigned char* imgdata, int radius) {
 
 
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < width * 3; j += 3){
+		for (j = 0; j < width * 3; j += 3, pos++){
             red[pos] = imgdata[i * rgb_width + j];
             green[pos] = imgdata[i * rgb_width + j + 1];
             blue[pos] = imgdata[i * rgb_width + j + 2];
-            pos++;
+            
         }
 	}
 
-    radius = ceil(radius);
-    int x;
-    double iy;
-    double ix;
+    double row;
+    double col;
+    double redSum = 0;
+    double greenSum = 0;
+    double blueSum = 0;
+    double weightSum = 0;
 
-    double valr = 0;
-    double valg = 0;
-    double valb = 0;
-    double wsum = 0;
-    for(i=0; i<height; i++){
-        for(j=0; j<width; j++) {
-            valr = 0;
-            valg = 0;
-            valb = 0;
-            wsum = 0;
-            for(iy = i-radius; iy<i+radius+1; iy++){
-                for(ix = j-radius; ix<j+radius+1; ix++) {
-                    int x = min(width-1, max(0, ix));
-                    int y = min(height-1, max(0, iy));
-                    double dsq = (ix-j)*(ix-j)+(iy-i)*(iy-i);
-                    double wght = exp( -dsq / (2*radius*radius) ) / (3.14*2*radius*radius);
-                    valr += red[y*width+x] * wght;
-                    valg += green[y*width+x] * wght;
-                    valb += blue[y*width+x] * wght;
-                    wsum += wght;
+    for( i = 0 ; i < height; i++){
+        for(j = 0 ; j < width ; j++) {
+
+            for(row = i-radius; row <= i + radius; row++){
+                for(col = j-radius; col<= j + radius; col++) {
+                    int x = setBoundary(col,0,width-1);
+                    int y = setBoundary(row,0,height-1);
+                    int tempPos = y * width + x;
+
+                    double square = (col-j)*(col-j)+(row-i)*(row-i);
+                    double sigma = radius*radius;
+                    double weight = exp(-square / (2*sigma)) / (3.14*2*sigma);
+
+                    redSum += red[tempPos] * weight;
+                    greenSum += green[tempPos] * weight;
+                    blueSum += blue[tempPos] * weight;
+                    weightSum += weight;
                 }    
             }
-            red[i*width+j] = round(valr/wsum);
-            green[i*width+j] = round(valg/wsum);
-            blue[i*width+j] = round(valb/wsum);
+            red[i*width+j] = round(redSum/weightSum);
+            green[i*width+j] = round(greenSum/weightSum);
+            blue[i*width+j] = round(blueSum/weightSum);
+
+            redSum = 0;
+            greenSum = 0;
+            blueSum = 0;
+            weightSum = 0;
         }
     }
         
 	pos = 0;
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width* 3 ; j  += 3) {
+	for (i = 0; i < height; i++ ) {
+		for (j = 0; j < width* 3 ; j += 3 , pos++) {
 			imgdata[i * rgb_width  + j] = red[pos];
 			imgdata[i * rgb_width  + j + 1] = green[pos];
 			imgdata[i * rgb_width  + j + 2] = blue[pos];
-			pos++;
 		}
 	}
 	free(red);
