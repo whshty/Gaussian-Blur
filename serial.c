@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <stdint.h>
-#include <time.h>
-#include <math.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <malloc.h>
+# include <stdint.h>
+# include <time.h>
+# include <math.h>
 
-#define IMAGESIZE 60
+# define IMAGESIZE 60
 
-#pragma pack(push, 2)          
+# pragma pack(push, 2)          
     typedef struct {
         char sign;
         int size;
@@ -25,11 +25,11 @@
         int colnum;
         int basecolnum;
     } img;
-#pragma pop
+# pragma pop
 
 char* openImg(char* filename, img* bmp);
-void generateImg(img* bmp, char* imgdata);
-void gaussianblur(int width, int height, unsigned char* imgdata, int radius);
+void generateImg(char* imgdata, img* bmp);
+void gaussianblur(unsigned char* imgdata, int width, int height, int radius);
 
 int main(int argc, char *argv[]) {
     unsigned char* inputData;
@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
 
     int radius = atoi(argv[1]);
     inputData = openImg(inputImg, bmp);
-    gaussianblur(bmp->width, bmp->height, inputData, radius);
-    generateImg(bmp, inputData);
+    gaussianblur(inputData, bmp->width, bmp->height,radius);
+    generateImg(inputData, bmp);
 
     free(bmp);
     free(inputData);
@@ -67,7 +67,7 @@ char* openImg(char* filename, img* in) {
     return data;
 }
 
-void generateImg(img* out, char* imgdata) {
+void generateImg(char* imgdata , img* out) {
     FILE* file;
     time_t now;
     time(&now);
@@ -88,10 +88,10 @@ int setBoundary(int i , int min , int max){
     return i;  
 }
 
-void gaussianblur(int width, int height, unsigned char* imgdata, int radius) {
-    unsigned char* red;
-    unsigned char* green;
-    unsigned char* blue;
+void gaussianblur(unsigned char* imgdata, int width, int height, int radius) {
+    char* red;
+    char* green;
+    char* blue;
     red = (unsigned char*) malloc (width*height);
     green = (unsigned char*) malloc(width*height);
     blue = (unsigned char*) malloc(width*height);

@@ -1,2 +1,3 @@
 all:
-	gcc -o res serial.c -lm
+	gcc -o serial serial.c -lm
+	gcc -o fork fork.c -lm -lrt
