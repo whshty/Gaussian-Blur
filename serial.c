@@ -4,6 +4,7 @@
 # include <stdint.h>
 # include <time.h>
 # include <math.h>
+# include <sys/time.h>
 
 # define IMAGESIZE 60
 
@@ -39,7 +40,16 @@ int main(int argc, char *argv[]) {
 
     int radius = atoi(argv[1]);
     inputData = openImg(inputImg, bmp);
+
+
+    struct timeval start_time, stop_time, elapsed_time; 
+    gettimeofday(&start_time,NULL); 
     gaussianblur(inputData, bmp->width, bmp->height,radius);
+    gettimeofday(&stop_time,NULL);
+    timersub(&stop_time, &start_time, &elapsed_time); 
+    printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
+
+
     generateImg(inputData, bmp);
 
     free(bmp);
