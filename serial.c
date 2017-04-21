@@ -33,12 +33,11 @@ void generateImg(char* imgdata, img* bmp);
 void gaussianblur(unsigned char* imgdata, int width, int height, int radius);
 
 int main(int argc, char *argv[]) {
-    unsigned char* inputData;
     int i;
+    int radius = atoi(argv[1]);
+    unsigned char* inputData;
     img* bmp = (img*) malloc (IMAGESIZE);
     char* inputImg = "input.bmp";
-
-    int radius = atoi(argv[1]);
     inputData = openImg(inputImg, bmp);
 
 
@@ -48,7 +47,6 @@ int main(int argc, char *argv[]) {
     gettimeofday(&stop_time,NULL);
     timersub(&stop_time, &start_time, &elapsed_time); 
     printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
-
 
     generateImg(inputData, bmp);
 
