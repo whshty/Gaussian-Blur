@@ -6,7 +6,7 @@
 # include <math.h>
 # include <sys/time.h>
 
-# define IMAGESIZE 50
+# define IMAGESIZE 54
 
 # pragma pack(push, 2)          
     typedef struct {
@@ -118,8 +118,7 @@ void gaussianblur(unsigned char* imgdata, int width, int height, int radius) {
 		for (j = 0; j < width * 3; j += 3, pos++){
             red[pos] = imgdata[i * rgb_width + j];
             green[pos] = imgdata[i * rgb_width + j + 1];
-            blue[pos] = imgdata[i * rgb_width + j + 2];
-            
+            blue[pos] = imgdata[i * rgb_width + j + 2];  
         }
 	}
 
@@ -132,7 +131,6 @@ void gaussianblur(unsigned char* imgdata, int width, int height, int radius) {
 
     for( i = 0 ; i < height; i++){
         for(j = 0 ; j < width ; j++) {
-
             for(row = i-radius; row <= i + radius; row++){
                 for(col = j-radius; col<= j + radius; col++) {
                     int x = setBoundary(col,0,width-1);

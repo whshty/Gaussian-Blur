@@ -11,7 +11,7 @@
 # include <math.h>
 
 
-# define IMAGESIZE 60
+# define IMAGESIZE 54
 
 # pragma pack(push, 2)          
     typedef struct {
@@ -52,22 +52,32 @@ int main(int argc, char *argv[]){
     int width = bmp->width;
     int height = bmp->height;
 
-    int SIZE = width * height * sizeof(unsigned char);
 
-    int i, j;
-       
+    char *nameRed = "colorRed";
+    char *nameGreen = "colorGreen";
+    char *nameBlue = "colorBlue";
+    int SIZE = width * height * sizeof(unsigned char);
+    unsigned char* red = setup_memory(nameRed,SIZE);
+    unsigned char* green = setup_memory(nameGreen,SIZE);
+    unsigned char* blue = setup_memory(nameBlue,SIZE);
+    
+    int i, j;       
     int rgb_width =  width * 3 ;
     if ((width * 3  % 4) != 0) {
        rgb_width += (4 - (width * 3 % 4));  
     }
 
-    char *nameRed = "colorRed";
-    char *nameGreen = "colorGreen";
-    char *nameBlue = "colorBlue";
-    unsigned char* red = setup_memory(nameRed,SIZE);
-    unsigned char* green = setup_memory(nameGreen,SIZE);
-    unsigned char* blue = setup_memory(nameBlue,SIZE);
-    
+    int pos = 0; 
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width * 3; j += 3, pos++){
+            red[pos] = imgdata[i * rgb_width + j];
+            green[pos] = imgdata[i * rgb_width + j + 1];
+            blue[pos] = imgdata[i * rgb_width + j + 2];
+        }
+	}
+
+	struct timeval start_time, stop_time, elapsed_time; 
+    gettimeofday(&start_time,NULL);
 
     int nStart;
     int nStop;
@@ -75,24 +85,17 @@ int main(int argc, char *argv[]){
 
     pid_t pid;
     pid = fork(); 
+
     if (pid > 0) { 
         isFirstProcess = 1; 
         nStart = 0;
-        nStop = height / 2 - 1;
+        nStop = height / 2;
     }
     else { 
         nStart = height / 2;
         nStop = height;
-    }  
+    }
 
-    int pos = 0; 
-	for (i = nStart; i < nStop; i++) {
-		for (j = 0; j < width * 3; j += 3, pos++){
-            red[pos] = imgdata[i * rgb_width + j];
-            green[pos] = imgdata[i * rgb_width + j + 1];
-            blue[pos] = imgdata[i * rgb_width + j + 2];
-        }
-	}
 
     double row;
     double col;
@@ -126,10 +129,12 @@ int main(int argc, char *argv[]){
             weightSum = 0;
         }
     }
-
+    gettimeofday(&stop_time,NULL);
+    timersub(&stop_time, &start_time, &elapsed_time); 
+    printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
 
 	pos = 0;
-	for (i = nStart; i < nStop; i++ ) {
+	for (i = 0; i < height; i++ ) {
 		for (j = 0; j < width* 3 ; j += 3 , pos++) {
 			imgdata[i * rgb_width  + j] = red[pos];
 			imgdata[i * rgb_width  + j + 1] = green[pos];
@@ -144,7 +149,6 @@ int main(int argc, char *argv[]){
     if( isFirstProcess == 0){
         return EXIT_SUCCESS;
     }
-
 	if (isFirstProcess) { 
 		if (shm_unlink(nameIn) == -1 |  shm_unlink(nameRed) == -1 | shm_unlink(nameGreen) == -1 | shm_unlink(nameBlue) == -1) {
 			printf("Error removing memory\n");
