@@ -56,8 +56,6 @@ int main(int argc, char *argv[]){
     green = (unsigned char*) malloc(width*height);
     blue = (unsigned char*) malloc(width*height);
 
-
-
     int pos = 0; 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width * 3; j += 3, pos++){
