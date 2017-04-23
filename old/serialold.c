@@ -30,100 +30,28 @@
 
 char* openImg(char* filename, img* bmp);
 void generateImg(char* imgdata, img* bmp);
-int setBoundary(int i , int min , int max);
+void gaussianblur(unsigned char* imgdata, int width, int height, int radius);
 
 int main(int argc, char *argv[]) {
+    int i;
     int radius = atoi(argv[1]);
-    unsigned char* imgdata;
+    unsigned char* inputData;
     img* bmp = (img*) malloc (IMAGESIZE);
     char* inputImg = "input.bmp";
-    imgdata = openImg(inputImg, bmp);
-    int width = bmp->width;
-    int height = bmp->height;
+    inputData = openImg(inputImg, bmp);
 
-
-    unsigned char* red;
-    unsigned char* green;
-    unsigned char* blue;
-    red = (unsigned char*) malloc (width*height);
-    green = (unsigned char*) malloc(width*height);
-    blue = (unsigned char*) malloc(width*height);
-    int i, j;
-    int pos = 0;
-    
-    int rgb_width =  width * 3 ;
-    if ((width * 3  % 4) != 0) {
-       rgb_width += (4 - (width * 3 % 4));  
-    }
-    
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width * 3; j += 3, pos++){
-            red[pos] = imgdata[i * rgb_width + j];
-            green[pos] = imgdata[i * rgb_width + j + 1];
-            blue[pos] = imgdata[i * rgb_width + j + 2];  
-        }
-    }
 
     struct timeval start_time, stop_time, elapsed_time; 
     gettimeofday(&start_time,NULL); 
-
-    double row;
-    double col;
-    double redSum = 0;
-    double greenSum = 0;
-    double blueSum = 0;
-    double weightSum = 0;
-
-    for( i = 0 ; i < height; i++){
-        for(j = 0 ; j < width ; j++) {
-            for(row = i-radius; row <= i + radius; row++){
-                for(col = j-radius; col<= j + radius; col++) {
-                    int x = setBoundary(col,0,width-1);
-                    int y = setBoundary(row,0,height-1);
-                    int tempPos = y * width + x;
-
-                    double square = (col-j)*(col-j)+(row-i)*(row-i);
-                    double sigma = radius*radius;
-                    double weight = exp(-square / (2*sigma)) / (3.14*2*sigma);
-
-                    redSum += red[tempPos] * weight;
-                    greenSum += green[tempPos] * weight;
-                    blueSum += blue[tempPos] * weight;
-                    weightSum += weight;
-                }    
-            }
-            red[i*width+j] = round(redSum/weightSum);
-            green[i*width+j] = round(greenSum/weightSum);
-            blue[i*width+j] = round(blueSum/weightSum);
-
-            redSum = 0;
-            greenSum = 0;
-            blueSum = 0;
-            weightSum = 0;
-        }
-    }
-
+    gaussianblur(inputData, bmp->width, bmp->height,radius);
     gettimeofday(&stop_time,NULL);
     timersub(&stop_time, &start_time, &elapsed_time); 
     printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
 
-        
-    pos = 0;
-    for (i = 0; i < height; i++ ) {
-        for (j = 0; j < width* 3 ; j += 3 , pos++) {
-            imgdata[i * rgb_width  + j] = red[pos];
-            imgdata[i * rgb_width  + j + 1] = green[pos];
-            imgdata[i * rgb_width  + j + 2] = blue[pos];
-        }
-    }
-    
-    generateImg(imgdata, bmp);
+    generateImg(inputData, bmp);
 
     free(bmp);
-    free(red);
-    free(green);
-    free(blue);
-    free(imgdata);
+    free(inputData);
     return 0;
 }
 
@@ -160,8 +88,83 @@ void generateImg(char* imgdata , img* out) {
     fclose(file);
 }
 
+
+
 int setBoundary(int i , int min , int max){
     if( i < min) return min;
     else if( i > max ) return max;
     return i;  
+}
+
+void gaussianblur(unsigned char* imgdata, int width, int height, int radius) {
+    unsigned char* red;
+    unsigned char* green;
+    unsigned char* blue;
+    red = (unsigned char*) malloc (width*height);
+    green = (unsigned char*) malloc(width*height);
+    blue = (unsigned char*) malloc(width*height);
+    int i, j;
+    int pos = 0;
+    
+    int rgb_width =  width * 3 ;
+    if ((width * 3  % 4) != 0) {
+       rgb_width += (4 - (width * 3 % 4));  
+    }
+
+
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width * 3; j += 3, pos++){
+            red[pos] = imgdata[i * rgb_width + j];
+            green[pos] = imgdata[i * rgb_width + j + 1];
+            blue[pos] = imgdata[i * rgb_width + j + 2];  
+        }
+	}
+
+    double row;
+    double col;
+    double redSum = 0;
+    double greenSum = 0;
+    double blueSum = 0;
+    double weightSum = 0;
+
+    for( i = 0 ; i < height; i++){
+        for(j = 0 ; j < width ; j++) {
+            for(row = i-radius; row <= i + radius; row++){
+                for(col = j-radius; col<= j + radius; col++) {
+                    int x = setBoundary(col,0,width-1);
+                    int y = setBoundary(row,0,height-1);
+                    int tempPos = y * width + x;
+
+                    double square = (col-j)*(col-j)+(row-i)*(row-i);
+                    double sigma = radius*radius;
+                    double weight = exp(-square / (2*sigma)) / (3.14*2*sigma);
+
+                    redSum += red[tempPos] * weight;
+                    greenSum += green[tempPos] * weight;
+                    blueSum += blue[tempPos] * weight;
+                    weightSum += weight;
+                }    
+            }
+            red[i*width+j] = round(redSum/weightSum);
+            green[i*width+j] = round(greenSum/weightSum);
+            blue[i*width+j] = round(blueSum/weightSum);
+
+            redSum = 0;
+            greenSum = 0;
+            blueSum = 0;
+            weightSum = 0;
+        }
+    }
+        
+	pos = 0;
+	for (i = 0; i < height; i++ ) {
+		for (j = 0; j < width* 3 ; j += 3 , pos++) {
+			imgdata[i * rgb_width  + j] = red[pos];
+			imgdata[i * rgb_width  + j + 1] = green[pos];
+			imgdata[i * rgb_width  + j + 2] = blue[pos];
+		}
+	}
+	free(red);
+	free(green);
+	free(blue);
 }
