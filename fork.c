@@ -40,15 +40,16 @@ void generateImg(char* imgdata, img* bmp);
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
+    int radius = atoi(argv[1]);
+    int nProc = atoi(argv[2]);
+
     img* bmp = (img*) malloc (IMAGESIZE);
     char *inputImg = "input.bmp";
-    int radius = atoi(argv[1]);
     char *nameIn = "imageIn";
     unsigned char* imgdata = setup_memory(nameIn,IMAGESIZE);
     imgdata = openImg(inputImg, bmp);
     int width = bmp->width;
     int height = bmp->height;
-
 
     char *nameRed = "colorRed";
     char *nameGreen = "colorGreen";
@@ -76,23 +77,23 @@ int main(int argc, char *argv[]){
 	struct timeval start_time, stop_time, elapsed_time; 
     gettimeofday(&start_time,NULL);
 
+    pid_t pid = 0;
+    int iProc = 0; 
+    int nextProc; 
+    int total_local = 0;
+    for (nextProc = 1; nextProc < nProc & !pid; nextProc++) {
+        pid = fork();
+        if (!pid) {
+            iProc = nextProc;
+        }
+    }
+
+    int subSize = height/ nProc;
     int nStart;
     int nStop;
-    int isFirstProcess = 0;
 
-    pid_t pid;
-    pid = fork(); 
-
-    if (pid > 0) { 
-        isFirstProcess = 1; 
-        nStart = 0;
-        nStop = height / 2;
-    }
-    else { 
-        nStart = height / 2;
-        nStop = height;
-    }
-
+    nStart = iProc * subSize;
+    nStop = (iProc+1) * subSize;
 
     double row;
     double col;
@@ -130,29 +131,28 @@ int main(int argc, char *argv[]){
     timersub(&stop_time, &start_time, &elapsed_time); 
     printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
 
-	pos = 0;
-	for (i = 0; i < height; i++ ) {
-		for (j = 0; j < width* 3 ; j += 3 , pos++) {
-			imgdata[i * rgb_width  + j] = red[pos];
-			imgdata[i * rgb_width  + j + 1] = green[pos];
-			imgdata[i * rgb_width  + j + 2] = blue[pos];
-		}
-	}
 
-    if( isFirstProcess == 1 ){
+    if( iProc == 0 ){
+        pos = 0;
+        for (i = 0; i < height; i++ ) {
+            for (j = 0; j < width* 3 ; j += 3 , pos++) {
+                imgdata[i * rgb_width  + j] = red[pos];
+                imgdata[i * rgb_width  + j + 1] = green[pos];
+                imgdata[i * rgb_width  + j + 2] = blue[pos];
+            }
+        }
         wait(NULL);
         generateImg(imgdata, bmp);
+        if (shm_unlink(nameIn) == -1 |  shm_unlink(nameRed) == -1 | shm_unlink(nameGreen) == -1 | shm_unlink(nameBlue) == -1) {
+            printf("Error removing memory\n");
+            exit(-1);
+        }
+        free(bmp);       
     }
-    if( isFirstProcess == 0){
+    if (iProc > 0 ){
+        wait(NULL);
         return EXIT_SUCCESS;
     }
-	if (isFirstProcess) { 
-		if (shm_unlink(nameIn) == -1 |  shm_unlink(nameRed) == -1 | shm_unlink(nameGreen) == -1 | shm_unlink(nameBlue) == -1) {
-			printf("Error removing memory\n");
-			exit(-1);
-		}		
-	}
-    free(bmp);
     return 0;
 }
 
