@@ -41,12 +41,9 @@ int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
     img* bmp = (img*) malloc (IMAGESIZE);
-    
     char *inputImg = "input.bmp";
     int radius = atoi(argv[1]);
-
     char *nameIn = "imageIn";
-    char *nameOut = "imageOut";
     unsigned char* imgdata = setup_memory(nameIn,IMAGESIZE);
     imgdata = openImg(inputImg, bmp);
     int width = bmp->width;
