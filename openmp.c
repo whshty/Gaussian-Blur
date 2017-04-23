@@ -34,11 +34,11 @@ void generateImg(char* imgdata, img* bmp);
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
-    unsigned char* inputData;
+    unsigned char* imgdata;
     img* bmp = (img*) malloc (IMAGESIZE);
     char *inputImg = "input.bmp";
     int radius = atoi(argv[1]);
-    inputData  = openImg(inputImg, bmp);
+    imgdata  = openImg(inputImg, bmp);
 
     int width = bmp->width;
     int height = bmp->height;
@@ -59,9 +59,9 @@ int main(int argc, char *argv[]){
     int pos = 0; 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width * 3; j += 3, pos++){
-            red[pos] = inputData[i * rgb_width + j];
-            green[pos] = inputData[i * rgb_width + j + 1];
-            blue[pos] = inputData[i * rgb_width + j + 2];
+            red[pos] = imgdata[i * rgb_width + j];
+            green[pos] = imgdata[i * rgb_width + j + 1];
+            blue[pos] = imgdata[i * rgb_width + j + 2];
         }
     }
 
@@ -108,13 +108,13 @@ int main(int argc, char *argv[]){
     pos = 0;
     for (i = 0; i < height; i++ ) {
         for (j = 0; j < width* 3 ; j += 3 , pos++) {
-            inputData [i * rgb_width  + j] = red[pos];
-            inputData [i * rgb_width  + j + 1] = green[pos];
-            inputData [i * rgb_width  + j + 2] = blue[pos];
+            imgdata [i * rgb_width  + j] = red[pos];
+            imgdata [i * rgb_width  + j + 1] = green[pos];
+            imgdata [i * rgb_width  + j + 2] = blue[pos];
         }
     }
 
-    generateImg(inputData , bmp);
+    generateImg(imgdata, bmp);
     free(red);
     free(green);
     free(blue);
