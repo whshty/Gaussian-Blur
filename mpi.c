@@ -44,6 +44,7 @@ int main(int argc, char *argv[]){
 
     int width = bmp->width;
     int height = bmp->height;
+    int SIZE = width * height * sizeof(unsigned char);
 
     int i, j;       
     int rgb_width =  width * 3 ;
@@ -87,7 +88,6 @@ int main(int argc, char *argv[]){
     nStart = my_PE_num * subSize;
     nStop = (my_PE_num + 1) * subSize;
 
-
     if( my_PE_num == 0 ){
         for( i = nStart ; i < nStop; i++){
             for(j = 0 ; j < width ; j++) {
@@ -118,6 +118,23 @@ int main(int argc, char *argv[]){
                 greenSum = 0;
                 blueSum = 0;
                 weightSum = 0;
+            }
+        }
+        for( i = 0 ; i < height ; i++){
+            for( j = 0 ; j < height ;j++){
+                redBuffer[i*width+j] = red[i*width+j];
+                greenBuffer[i*width+j] = green[i*width+j];
+                blueBuffer[i*width+j] = blue[i*width+j];
+            }
+        }
+        MPI_Recv(&redBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        MPI_Recv(&greenBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        MPI_Recv(&blueBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        for( i = height / 2 ; i < height ; i++){
+            for( j = 0 ; j < width ; j++ ){
+                red[i*width+j] = redBuffer[i*width+j];
+                green[i*width+j] = greenBuffer[i*width+j];
+                blue[i*width+j] =blueBuffer[i*width+j];
             }
         }
     }
@@ -154,6 +171,16 @@ int main(int argc, char *argv[]){
                 weightSum = 0;
             }
         }
+        for( i = 0 ; i < height ; i++){
+            for( j = 0 ; j < height ;j++){
+                redBuffer[i*width+j] = red[i*width+j];
+                greenBuffer[i*width+j] = green[i*width+j];
+                blueBuffer[i*width+j] = blue[i*width+j];
+            }
+        }
+        MPI_Send(&redBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+        MPI_Send(&greenBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+        MPI_Send(&blueBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
     }
 
     
@@ -171,6 +198,7 @@ int main(int argc, char *argv[]){
     }
 
     generateImg(inputData , bmp);
+    MPI_Finalize();
     free(red);
     free(green);
     free(blue);
