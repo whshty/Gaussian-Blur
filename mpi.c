@@ -36,11 +36,11 @@ void generateImg(char* imgdata, img* bmp);
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
-    unsigned char* inputData;
+    unsigned char* imgdata;
     img* bmp = (img*) malloc (IMAGESIZE);
     char *inputImg = "input.bmp";
     int radius = atoi(argv[1]);
-    inputData  = openImg(inputImg, bmp);
+    imgdata  = openImg(inputImg, bmp);
 
     int width = bmp->width;
     int height = bmp->height;
@@ -62,9 +62,9 @@ int main(int argc, char *argv[]){
     int pos = 0; 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width * 3; j += 3, pos++){
-            red[pos] = inputData[i * rgb_width + j];
-            green[pos] = inputData[i * rgb_width + j + 1];
-            blue[pos] = inputData[i * rgb_width + j + 2];
+            red[pos] = imgdata[i * rgb_width + j];
+            green[pos] = imgdata[i * rgb_width + j + 1];
+            blue[pos] = imgdata[i * rgb_width + j + 2];
         }
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
     unsigned char greenBuffer[width*height];
     unsigned char blueBuffer[width*height];
 
-    int my_PE_num, received;
+    int my_PE_num;
     int threadNumber;
     int nStart, nStop;
 
@@ -89,6 +89,25 @@ int main(int argc, char *argv[]){
     nStop = (my_PE_num + 1) * subSize;
 
     if( my_PE_num == 0 ){
+        int k, n_proc;
+        MPI_Comm_size(MPI_COMM_WORLD, &n_proc);
+        for( k = 1 ; k < n_proc; k++ ){
+            MPI_Recv(&redBuffer, SIZE, MPI_UNSIGNED_CHAR, k, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(&greenBuffer, SIZE, MPI_UNSIGNED_CHAR, k, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(&blueBuffer, SIZE, MPI_UNSIGNED_CHAR, k, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            
+            int otherThreadStart = k * subSize;
+            int otherThreadStop = (k+1) * subSize;
+
+            for( i = otherThreadStart; i < otherThreadStop ; i++){
+                for( j = 0 ; j < width ; j++ ){
+                    red[i*width+j] = redBuffer[i*width+j];
+                    green[i*width+j] = greenBuffer[i*width+j];
+                    blue[i*width+j] =blueBuffer[i*width+j];
+                }
+            }
+
+        }
         for( i = nStart ; i < nStop; i++){
             for(j = 0 ; j < width ; j++) {
                 double row;
@@ -118,28 +137,11 @@ int main(int argc, char *argv[]){
                 greenSum = 0;
                 blueSum = 0;
                 weightSum = 0;
-            }
-        }
-        for( i = 0 ; i < height ; i++){
-            for( j = 0 ; j < height ;j++){
-                redBuffer[i*width+j] = red[i*width+j];
-                greenBuffer[i*width+j] = green[i*width+j];
-                blueBuffer[i*width+j] = blue[i*width+j];
-            }
-        }
-        MPI_Recv(&redBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        MPI_Recv(&greenBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        MPI_Recv(&blueBuffer, SIZE, MPI_DOUBLE, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        for( i = height / 2 ; i < height ; i++){
-            for( j = 0 ; j < width ; j++ ){
-                red[i*width+j] = redBuffer[i*width+j];
-                green[i*width+j] = greenBuffer[i*width+j];
-                blue[i*width+j] =blueBuffer[i*width+j];
             }
         }
     }
 
-    if( my_PE_num == 1 ){
+    else {
         for( i = nStart ; i < nStop; i++){
             for(j = 0 ; j < width ; j++) {
                 double row;
@@ -171,16 +173,17 @@ int main(int argc, char *argv[]){
                 weightSum = 0;
             }
         }
-        for( i = 0 ; i < height ; i++){
-            for( j = 0 ; j < height ;j++){
+        for( i = nStart ; i < nStop ; i++){
+            for( j = 0 ; j < width ;j++){
                 redBuffer[i*width+j] = red[i*width+j];
                 greenBuffer[i*width+j] = green[i*width+j];
                 blueBuffer[i*width+j] = blue[i*width+j];
             }
         }
-        MPI_Send(&redBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-        MPI_Send(&greenBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-        MPI_Send(&blueBuffer, SIZE, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+        
+        MPI_Send(&redBuffer, SIZE, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&greenBuffer, SIZE, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&blueBuffer, SIZE, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
     }
 
     
@@ -188,16 +191,20 @@ int main(int argc, char *argv[]){
     timersub(&stop_time, &start_time, &elapsed_time); 
     printf("%f \n", elapsed_time.tv_sec+elapsed_time.tv_usec/1000000.0);
 
-    pos = 0;
-    for (i = 0; i < height; i++ ) {
-        for (j = 0; j < width* 3 ; j += 3 , pos++) {
-            inputData [i * rgb_width  + j] = red[pos];
-            inputData [i * rgb_width  + j + 1] = green[pos];
-            inputData [i * rgb_width  + j + 2] = blue[pos];
+    if( my_PE_num == 0 ) {
+        pos = 0;
+        for (i = 0; i < height; i++ ) {
+            for (j = 0; j < width* 3 ; j += 3 , pos++) {
+                imgdata [i * rgb_width  + j] = red[pos];
+                imgdata [i * rgb_width  + j + 1] = green[pos];
+                imgdata [i * rgb_width  + j + 2] = blue[pos];
+            }
         }
+        generateImg(imgdata , bmp);
     }
 
-    generateImg(inputData , bmp);
+
+    
     MPI_Finalize();
     free(red);
     free(green);
