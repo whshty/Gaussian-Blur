@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    generateImg(imgdata, bmp);
+    //generateImg(imgdata, bmp);
 
     free(bmp);
     free(red);

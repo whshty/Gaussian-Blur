@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     //imgdata  = openImg(inputImg, bmp);
     int inputFileNumber = atoi(argv[2]);  
     imgdata = openImg(inputFileNumber, bmp);
-    
+
     int width = bmp->width;
     int height = bmp->height;
     int SIZE = width * height * sizeof(unsigned char);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]){
                 imgdata [i * rgb_width  + j + 2] = blue[pos];
             }
         }
-        generateImg(imgdata , bmp);
+        //generateImg(imgdata , bmp);
     }
 
 

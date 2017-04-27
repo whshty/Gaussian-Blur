@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
             }
         }
         wait(NULL);
-        generateImg(imgdata, bmp);
+        //generateImg(imgdata, bmp);
         if (shm_unlink(nameIn) == -1 |  shm_unlink(nameRed) == -1 | shm_unlink(nameGreen) == -1 | shm_unlink(nameBlue) == -1) {
             printf("Error removing memory\n");
             exit(-1);
