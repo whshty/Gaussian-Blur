@@ -35,19 +35,19 @@
 
 
 unsigned char* setup_memory(char *name, int size);
-char* openImg(char* filename, img* bmp);
+char* openImg(int inputFileNumber, img* bmp);
 void generateImg(char* imgdata, img* bmp);
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
     int radius = atoi(argv[1]);
     int nProc = atoi(argv[2]);
+    int inputFileNumber = atoi(argv[3]);  
 
     img* bmp = (img*) malloc (IMAGESIZE);
-    char *inputImg = "input.bmp";
     char *nameIn = "imageIn";
     unsigned char* imgdata = setup_memory(nameIn,IMAGESIZE);
-    imgdata = openImg(inputImg, bmp);
+    imgdata = openImg(inputFileNumber, bmp);
     int width = bmp->width;
     int height = bmp->height;
 
@@ -169,9 +169,12 @@ unsigned char* setup_memory(char *name, int size) {
 }
 
 
-char* openImg(char* filename, img* in) {
+char* openImg(int inputFileNumber, img* in) {
+    char inPutFileNameBuffer[32];
+    sprintf(inPutFileNameBuffer, "%d.bmp",inputFileNumber);
+
     FILE* file;
-    if (!(file = fopen(filename, "rb"))) {
+    if (!(file = fopen(inPutFileNameBuffer, "rb"))) {
         printf("File not found!");
         free(in);
         exit(1);
@@ -188,7 +191,6 @@ char* openImg(char* filename, img* in) {
     fclose(file);
     return data;
 }
-
 void generateImg(char* imgdata , img* out) {
     FILE* file;
     time_t now;
