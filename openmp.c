@@ -68,8 +68,7 @@ int main(int argc, char *argv[]){
 
     struct timeval start_time, stop_time, elapsed_time; 
     gettimeofday(&start_time,NULL);
-
-    omp_set_num_threads(4);    
+    
     #pragma omp parallel for private(i,j) 
     for( i = 0 ; i < height; i++){
         for(j = 0 ; j < width ; j++) {
