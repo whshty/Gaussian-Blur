@@ -29,19 +29,39 @@
     } img;
 # pragma pop
 
-unsigned char* openImg(int inputFileNumber, img* in);
+//unsigned char* openImg(int inputFileNumber, img* in);
 void generateImg(unsigned char* imgdata, img* bmp);
 #pragma acc routine worker
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
-    unsigned char* imgdata;
-
-    img* bmp = (img*) malloc (IMAGESIZE);
-    #pragma acc enter data copyin(bmp)
     int radius = atoi(argv[1]);
     int inputFileNumber = atoi(argv[2]);
-    imgdata = openImg(inputFileNumber, bmp);
+    unsigned char* imgdata;
+    img* bmp = (img*) malloc (IMAGESIZE);
+    //imgdata = openImg(inputFileNumber, bmp);
+
+    char inPutFileNameBuffer[32];
+    sprintf(inPutFileNameBuffer, "%d.bmp",inputFileNumber);
+    FILE* file;
+    if (!(file = fopen(inPutFileNameBuffer, "rb"))) {
+        printf("File not found!");
+        free(bmp);
+        exit(1);
+    }
+    fread(bmp, 54, 1, file);
+    if( bmp->bitpix != 24){
+        free(bmp);
+        printf("Need 24 bit bmp file!");
+        exit(1);
+    }
+    
+    unsigned char* data = (unsigned char*) malloc (bmp->arraywidth);
+    fseek(file, bmp->data, SEEK_SET);
+    fread(data, bmp->arraywidth, 1, file);
+    fclose(file);
+    imgdata = data;
+
 
     int width = bmp->width;
     int height = bmp->height;
@@ -71,7 +91,7 @@ int main(int argc, char *argv[]){
     struct timeval start_time, stop_time, elapsed_time; 
     gettimeofday(&start_time,NULL);
     
-    #pragma acc kernels copy(red[0:1000]) 
+    #pragma acc data copy(red[0:width*height]),copy(green[0:width*height]),copy(blue[0:width*height])
     for( i = 0 ; i < height; i++){
         for(j = 0 ; j < width ; j++) {
             double row;
