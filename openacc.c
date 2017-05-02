@@ -29,18 +29,16 @@
     } img;
 # pragma pop
 
-#pragma acc routine(openImg)
-char* openImg(int inputFileNumber, img* bmp);
-
-#pragma acc routine(generateImg)
-void generateImg(char* imgdata, img* bmp);
-#pragma acc routine(setBoundary)
+unsigned char* openImg(int inputFileNumber, img* in);
+void generateImg(unsigned char* imgdata, img* bmp);
+#pragma acc routine worker
 int setBoundary(int i , int min , int max);
 
 int main(int argc, char *argv[]){
     unsigned char* imgdata;
+
     img* bmp = (img*) malloc (IMAGESIZE);
-    //char *inputImg = "input.bmp";
+    #pragma acc enter data copyin(bmp)
     int radius = atoi(argv[1]);
     int inputFileNumber = atoi(argv[2]);
     imgdata = openImg(inputFileNumber, bmp);
@@ -96,9 +94,9 @@ int main(int argc, char *argv[]){
                     weightSum += weight;
                 }    
             }
-            red[i*width+j] = round(redSum/weightSum);
-            green[i*width+j] = round(greenSum/weightSum);
-            blue[i*width+j] = round(blueSum/weightSum);
+            red[i*width+j] = (redSum/weightSum);
+            green[i*width+j] = (greenSum/weightSum);
+            blue[i*width+j] = (blueSum/weightSum);
             redSum = 0;
             greenSum = 0;
             blueSum = 0;
@@ -126,8 +124,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-#pragma acc routine(openImg)
-char* openImg(int inputFileNumber, img* in) {
+unsigned char* openImg(int inputFileNumber, img* in) {
     char inPutFileNameBuffer[32];
     sprintf(inPutFileNameBuffer, "%d.bmp",inputFileNumber);
     FILE* file;
@@ -142,15 +139,14 @@ char* openImg(int inputFileNumber, img* in) {
         printf("Need 24 bit bmp file!");
         exit(1);
     }
-    char* data = (char*) malloc (in->arraywidth);
+    unsigned char* data = (unsigned char*) malloc (in->arraywidth);
     fseek(file, in->data, SEEK_SET);
     fread(data, in->arraywidth, 1, file);
     fclose(file);
     return data;
 }
 
-#pragma acc routine(generateImg)
-void generateImg(char* imgdata , img* out) {
+void generateImg(unsigned char* imgdata , img* out) {
     FILE* file;
     time_t now;
     time(&now);

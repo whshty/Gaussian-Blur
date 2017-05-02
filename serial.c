@@ -36,8 +36,6 @@ int main(int argc, char *argv[]) {
     int radius = atoi(argv[1]);
     unsigned char* imgdata;
     img* bmp = (img*) malloc (IMAGESIZE);
-    
-
     int inputFileNumber = atoi(argv[2]);   
     imgdata = openImg(inputFileNumber, bmp);
 
