@@ -12,7 +12,6 @@ Put the input images, code and Makefile in one directory, four size of input ima
 
 ```
 make
-
 ```
 The first parameter is the calcuation radius, the second is the size of input image
 
@@ -75,6 +74,7 @@ Compile the code
 
 ```
 cd examples/helloWorld
+
 gradle jar
 
 hadoop jar build/libs/helloWorld.jar images.hib output1
