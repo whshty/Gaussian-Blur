@@ -45,6 +45,7 @@ sbatch openmp.slurm
 ## Output
 
 The output images are stored in dir ./Output Images
+
 For example, g1 means the calculation radius is 1 
 
 The runtimes are stored in dir ./Result
