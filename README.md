@@ -67,6 +67,8 @@ Create input image in your home dir and put test images in
 
 
 ```
+mkdir SampleImages 
+
 tools/hibImport.sh ~/SampleImages images.hib
 ```
 
