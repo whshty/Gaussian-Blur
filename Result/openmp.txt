@@ -1,0 +1,150 @@
+mpi.c(32): warning #161: unrecognized #pragma
+  # pragma pop
+           ^
+
+-------------------
+openmp
+sigma = 1
+1 threads
+size 500
+0.114427 
+size 1000
+0.456086 
+size 1500
+1.024540 
+size 2000
+1.820427 
+openmp
+sigma = 1
+2 threads
+size 500
+0.057786 
+size 1000
+0.228742 
+size 1500
+0.513355 
+size 2000
+0.911820 
+openmp
+sigma = 1
+4 threads
+size 500
+0.031057 
+size 1000
+0.122126 
+size 1500
+0.274899 
+size 2000
+0.490606 
+openmp
+sigma = 1
+8 threads
+size 500
+0.017099 
+size 1000
+0.067220 
+size 1500
+0.150805 
+size 2000
+0.267162 
+-------------------
+openmp
+sigma = 5
+1 threads
+size 500
+1.551134 
+size 1000
+6.207418 
+size 1500
+13.959560 
+size 2000
+24.813894 
+openmp
+sigma = 5
+2 threads
+size 500
+0.783134 
+size 1000
+3.133224 
+size 1500
+7.003637 
+size 2000
+12.424245 
+openmp
+sigma = 5
+2 threads
+size 500
+0.783567 
+size 1000
+3.120587 
+size 1500
+7.043811 
+size 2000
+12.622689 
+openmp
+sigma = 5
+4 threads
+size 500
+0.436625 
+size 1000
+1.666280 
+size 1500
+3.758568 
+size 2000
+6.661292 
+openmp
+sigma = 5
+8 threads
+size 500
+0.224320 
+size 1000
+0.891970 
+size 1500
+2.016777 
+size 2000
+3.565921 
+-------------------
+openmp
+sigma = 10
+1 threads
+size 500
+5.585347 
+size 1000
+22.362438 
+size 1500
+50.299140 
+size 2000
+89.433027 
+openmp
+sigma = 10
+2 threads
+size 500
+2.809776 
+size 1000
+11.301734 
+size 1500
+25.404888 
+size 2000
+44.852468 
+openmp
+sigma = 10
+4 threads
+size 500
+1.502409 
+size 1000
+5.986203 
+size 1500
+13.445231 
+size 2000
+24.235424 
+openmp
+sigma = 10
+8 threads
+size 500
+0.806077 
+size 1000
+3.197952 
+size 1500
+7.207099 
+size 2000
+12.796867 
