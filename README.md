@@ -42,6 +42,17 @@ Optional : The runtime of one single Slurm job is too long. Addtional Slurm is a
 sbatch mpi.slurm
 sbatch openmp.slurm
 ```
+## Output
+
+The output images are stored in dir ./Output Images
+For example, g1 means the calculation radius is 1 
+
+The runtimes are stored in dir ./Result
+
+* result.txt is the total runtime
+* optional: mpi.txt and openmp.txt is the result if you submit mpi or open slurm script only
+
+
 
 ## MapReduce using HIPI
 
