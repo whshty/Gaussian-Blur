@@ -80,7 +80,6 @@ cd examples/helloWorld
 gradle jar
 
 hadoop jar build/libs/helloWorld.jar images.hib output1
-
 ```
 
 See the result, the result will be average time of processing images using Gaussian Blur
@@ -88,3 +87,12 @@ See the result, the result will be average time of processing images using Gauss
 ```
 hadoop fs -cat ouput1/part-r-00000
 ```
+
+
+## Sample code 
+
+The serial verison of C code is basd on this repo
+https://github.com/whdcumt/Gaussian_Blur/blob/master/code.c
+
+The Java code of HIPI is based on sample code of computing the average pixel color from 
+http://hipi.cs.virginia.edu/gettingstarted.html
